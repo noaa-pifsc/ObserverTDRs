@@ -1,0 +1,127 @@
+---
+title: "Observer-deployed TDR trip summary"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
+```
+
+```{r, message = FALSE}
+# Load libraries
+library(tidyverse, quietly = TRUE)
+library(here)
+library(lubridate)
+```
+
+```{r}
+############################## Acknowledgements ##############################
+# This code is based off of Johanna Wren's code for Cooperative Research 
+# trip reports.  Thanks, Johanna!
+##############################################################################
+```
+
+
+```{r}
+# This section builds out some fields to construct the file name
+# and populates some values we'll use again
+
+# Enter the trip number here
+TripNum <- c('LL8516')
+
+# Enter trip type here (deep or shallow)
+TripType <- c('ShallowSet')
+
+# Enter TDR nomenclature here (deep/shallow or 1/2)
+TDRa <- c('TDR1')
+TDRb <- c('TDR2')
+```
+
+```{r}
+# Load data, and add a column for gear position
+# This is written for a Mac and things are probably different on a PC
+tdr1 <- read_csv(paste("/Volumes/GUTSNGRAVY/ObserverTDRs/", 
+                       TripNum, "_",
+                       TripType, "_",
+                       TDRa, ".csv", sep = ""),
+                 skip = 2, show_col_types = FALSE) |>
+  mutate(GearPos = "1")
+
+tdr2 <- read_csv(paste("/Volumes/GUTSNGRAVY/ObserverTDRs/", 
+                       TripNum, "_",
+                       TripType, "_",
+                       TDRb, ".csv", sep = ""),
+                 skip = 2, show_col_types = FALSE) |>
+  mutate(GearPos = "2")
+
+# Combine data, noting deep and shallow or 1 and 2
+tdr <- bind_rows(list(tdr1, tdr2))
+```
+
+```{r}
+# Deal with the dates
+tdr$Time <- as.character(tdr$Time)
+tdr$DateTime <- as.POSIXct(paste(tdr$Date, tdr$Time), format="%m/%d/%Y %H:%M:%S")
+```
+
+```{r}
+# We'll need to trim off the surface data at the very least, and we can modify this bit depending on what the data look like
+# Here I'm replacing the surface values with NA otherwise the data plots poorly
+# Observer TDRs: I've tested a few values for shallow sets (11, 5, 0.5) and they
+# all look the same so I went with least restrictive value
+tdr <- tdr %>% 
+  mutate(DepthOnly=replace(`Pressure [dBars]`, `Pressure [dBars]` <= 0.5, NA))
+```
+
+## Trip Number `r TripNum`, `r TripType`
+The following plot shows the depth of the gear (vertically) over time (
+horizontally) from the TDRs.  The color of the line is the temperature at the 
+depth of the gear.  The stacked appearance is because 2 TDRs are attached to 
+each set.  You're seeing the temperature and depth reported by each of these 
+TDRs - 'shallow' and 'deep' - together in one figure.
+
+```{r}
+# Set custom ggplot theme for all figures for uniform look in the report
+tdrTheme <- theme_bw() + 
+            theme(panel.grid=element_blank(),
+                  #legend.key.height = unit(2, "cm"),
+                  legend.title = element_text(size = 12, angle = 90),
+                  legend.title.align = 0.5,
+                  legend.direction = "vertical")
+
+# Make a simple depth time series
+ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
+  geom_path() + 
+  scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') +
+  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '1 days', ) +
+  scale_y_reverse() +
+  xlab('Date') +
+  ylab('Depth (m)') +
+  tdrTheme +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  guides(colour=guide_colourbar(title.position = 'right', barheight=17))
+```
+\newpage
+
+This plot shows the same thing, only it's limited to the upper 200 meters of the
+the water so you can see the data better.  
+```{r, message = FALSE}
+# Adding and additional plot to focus on the shallowest depths, since there's
+# one really deep one.
+
+# Make a simple depth time series
+ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
+  geom_path() + 
+  scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') +
+  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '1 days', ) +
+  scale_y_reverse() +
+  xlab('Date') +
+  ylab('Depth (m)') +
+  ylim(200, 0) +
+  tdrTheme +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  guides(colour=guide_colourbar(title.position = 'right', barheight=17))
+```
+
+
+
