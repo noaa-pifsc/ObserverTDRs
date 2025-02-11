@@ -1,5 +1,10 @@
 ---
 title: "Observer-deployed TDR trip summary"
+header-includes:
+- \usepackage{tabto}
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
 output: pdf_document
 ---
 
@@ -21,6 +26,7 @@ library(lubridate)
 ##############################################################################
 ```
 
+\blandscape
 
 ```{r}
 # This section builds out some fields to construct the file name
@@ -93,7 +99,7 @@ tdrTheme <- theme_bw() +
 ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   geom_path() + 
   scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') +
-  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '1 days', ) +
+  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', ) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
@@ -113,7 +119,7 @@ the water so you can see the data better.
 ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   geom_path() + 
   scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') +
-  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '1 days', ) +
+  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', ) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
@@ -123,5 +129,4 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   guides(colour=guide_colourbar(title.position = 'right', barheight=17))
 ```
 
-
-
+\elandscape
