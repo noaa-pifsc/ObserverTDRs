@@ -6,6 +6,7 @@ header-includes:
 - \newcommand{\blandscape}{\begin{landscape}}
 - \newcommand{\elandscape}{\end{landscape}}
 output: pdf_document
+classoption: landscape
 ---
 
 ```{r setup, include=FALSE}
@@ -25,8 +26,6 @@ library(lubridate)
 # trip reports.  Thanks, Johanna!
 ##############################################################################
 ```
-
-\blandscape
 
 ```{r}
 # This section builds out some fields to construct the file name
@@ -80,13 +79,13 @@ tdr <- tdr %>%
 ```
 
 ## Trip Number `r TripNum`, `r TripType`
-The following plot shows the depth of the gear (vertically) over time (
-horizontally) from the TDRs.  The color of the line is the temperature at the 
+The following plot shows the depth of the gear (vertically) over time 
+(horizontally) from the TDRs.  The color of the line is the temperature at the 
 depth of the gear.  The stacked appearance is because 2 TDRs are attached to 
 each set.  You're seeing the temperature and depth reported by each of these 
 TDRs - 'shallow' and 'deep' - together in one figure.
 
-```{r}
+```{r, fig.height=4, fig.width=9}
 # Set custom ggplot theme for all figures for uniform look in the report
 tdrTheme <- theme_bw() + 
             theme(panel.grid=element_blank(),
@@ -111,7 +110,7 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
 
 This plot shows the same thing, only it's limited to the upper 200 meters of the
 the water so you can see the data better.  
-```{r, message = FALSE}
+```{r, message = FALSE, fig.height=4, fig.width=9}
 # Adding and additional plot to focus on the shallowest depths, since there's
 # one really deep one.
 
@@ -128,5 +127,3 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   guides(colour=guide_colourbar(title.position = 'right', barheight=17))
 ```
-
-\elandscape
