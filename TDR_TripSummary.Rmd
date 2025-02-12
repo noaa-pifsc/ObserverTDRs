@@ -32,10 +32,10 @@ library(lubridate)
 # and populates some values we'll use again
 
 # Enter the trip number here
-TripNum <- c('LL8516')
+TripNum <- c('LL8552')
 
 # Enter trip type here (deep or shallow)
-TripType <- c('ShallowSet')
+TripType <- c('DeepSet')
 
 # Enter TDR nomenclature here (deep/shallow or 1/2)
 TDRa <- c('TDR1')
@@ -98,7 +98,10 @@ tdrTheme <- theme_bw() +
 ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   geom_path() + 
   scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') +
-  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', ) +
+  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', 
+                   limits = c(
+                     as.POSIXct("2025-01-21 00:00:00 HST"),
+                     as.POSIXct("2025-02-05 00:00:00 HST"))) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
@@ -106,7 +109,7 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   guides(colour=guide_colourbar(title.position = 'right', barheight=17))
 ```
-\newpage
+<!-- \newpage
 
 This plot shows the same thing, only it's limited to the upper 200 meters of the
 the water so you can see the data better.  

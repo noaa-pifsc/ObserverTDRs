@@ -10,21 +10,21 @@ collected TDR data.
 
 ```{r}
 # Set up environment
-library(tidyverse)
+library(tidyverse, quietly = TRUE)
 ```
 
 This is written for a Mac and things may be different on a PC.  
 ```{r}
 # Load data
-tdr1 <- read_csv("/Volumes/GUTSNGRAVY/ObserverTDRs/LL8516_ShallowSet_TDR1.csv", skip = 2, show_col_types = FALSE)
-tdr2 <- read_csv("/Volumes/GUTSNGRAVY/ObserverTDRs/LL8516_ShallowSet_TDR2.csv", skip = 2, show_col_types = FALSE)
+tdr1 <- read_csv("/Volumes/GUTSNGRAVY/ObserverTDRs/LL8552_DeepSet_TDR1.csv", skip = 2, show_col_types = FALSE)
+tdr2 <- read_csv("/Volumes/GUTSNGRAVY/ObserverTDRs/LL8552_DeepSet_TDR2.csv", skip = 2, show_col_types = FALSE)
 ```
 
 The TDRs keep collecting data until they dry, which can take a while in the 
 pelican case.  So, filtering to get only records with a valid flag of 1.
 If negative pressures are present, I filter those out, too.
 ```{r}
-tdr1 <- tdr1 |>
+tdr1 <- tdr1 |> 
   filter(`Valid Flag` == 1) |>
   filter(`Pressure [dBars]` > 0)
 
