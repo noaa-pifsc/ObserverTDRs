@@ -32,14 +32,14 @@ library(lubridate)
 # and populates some values we'll use again
 
 # Enter the trip number here
-TripNum <- c('LL8552')
+TripNum <- c('')
 
 # Enter trip type here (deep or shallow)
 TripType <- c('DeepSet')
 
 # Enter TDR nomenclature here (deep/shallow or 1/2)
-TDRa <- c('TDR1')
-TDRb <- c('TDR2')
+TDRa <- c('DeepTDR')
+TDRb <- c('ShallowTDR')
 ```
 
 ```{r}
@@ -50,14 +50,14 @@ tdr1 <- read_csv(paste("/Volumes/GUTSNGRAVY/ObserverTDRs/",
                        TripType, "_",
                        TDRa, ".csv", sep = ""),
                  skip = 2, show_col_types = FALSE) |>
-  mutate(GearPos = "1")
+  mutate(GearPos = "Deep")
 
 tdr2 <- read_csv(paste("/Volumes/GUTSNGRAVY/ObserverTDRs/", 
                        TripNum, "_",
                        TripType, "_",
                        TDRb, ".csv", sep = ""),
                  skip = 2, show_col_types = FALSE) |>
-  mutate(GearPos = "2")
+  mutate(GearPos = "Shallow")
 
 # Combine data, noting deep and shallow or 1 and 2
 tdr <- bind_rows(list(tdr1, tdr2))
@@ -100,8 +100,8 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') +
   scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', 
                    limits = c(
-                     as.POSIXct("2025-01-21 00:00:00 HST"),
-                     as.POSIXct("2025-02-05 00:00:00 HST"))) +
+                     as.POSIXct("2024-12-22 00:00:00 HST"),
+                     as.POSIXct("2025-01-05 00:00:00 HST"))) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
