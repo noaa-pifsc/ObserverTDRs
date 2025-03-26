@@ -32,7 +32,7 @@ library(lubridate)
 # and populates some values we'll use again
 
 # Enter the trip number here
-TripNum <- c('LL8574')
+TripNum <- c('LL')
 
 # Enter trip type here (deep or shallow)
 TripType <- c('ShallowSet')
