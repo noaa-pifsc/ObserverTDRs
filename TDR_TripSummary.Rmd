@@ -101,8 +101,8 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
                         limits = c(15,25)) +
   scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', 
                    limits = c(
-                     as.POSIXct("2025-03-28 00:00:00 HST"),
-                     as.POSIXct("2025-04-20 00:00:00 HST"))) +
+                     as.POSIXct("2025-04-07 00:00:00 HST"),
+                     as.POSIXct("2025-05-10 00:00:00 HST"))) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
@@ -112,7 +112,7 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
 ```
 <!-- \newpage
 
-This plot shows the same thing, only it's limited to the upper 200 meters of the
+This plot shows the same thing, only it's limited to the upper 10 meters of the
 the water so you can see the data better.  
 ```{r, message = FALSE, fig.height=4, fig.width=9}
 # Adding and additional plot to focus on the shallowest depths, since there's
@@ -126,8 +126,9 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
-  ylim(200, 0) +
+  ylim(10, 0) +
   tdrTheme +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   guides(colour=guide_colourbar(title.position = 'right', barheight=17))
 ```
+
