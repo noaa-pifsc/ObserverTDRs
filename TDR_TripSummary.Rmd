@@ -35,7 +35,7 @@ library(lubridate)
 TripNum <- c('LL')
 
 # Enter trip type here (deep or shallow)
-TripType <- c('ShallowSet')
+TripType <- c('DeepSet')
 
 # Enter TDR nomenclature here (deep/shallow or 1/2)
 TDRa <- c('DeepTDR')
@@ -88,6 +88,9 @@ TDRs - 'shallow' and 'deep' - together in one figure.
 from the TDRs.  The TDRs appear to have failed at some point on the trip.  One
 only shows surface values after the 12th set.  We were unable to get data off
 of the second TDR.  -->
+<!-- The following plot shows the depth of the gear (vertically) over time
+(horizontally) from the TDRs.  One TDR was lost at sea (it happens), and the 
+remaining shallow TDR was only deployed for three sets. -->
 
 ```{r, fig.height=4, fig.width=9}
 # Set custom ggplot theme for all figures for uniform look in the report
@@ -103,10 +106,10 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
   geom_path() + 
   scale_color_viridis_c('Water Temperature (°C)', option = 'turbo') + #,
                         # limits = c(10,32)) +
-  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days') + #, 
+  scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days') + 
                    # limits = c(
-                   #   as.POSIXct("2025-08-21 00:00:00 HST"),
-                   #   as.POSIXct("2025-09-15 00:00:00 HST"))) +
+                   #   as.POSIXct("2025-09-24 00:00:00 HST"),
+                   #   as.POSIXct("2025-10-13 00:00:00 HST"))) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
