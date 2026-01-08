@@ -108,8 +108,8 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
                         # limits = c(10,32)) +
   scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days') + 
                    # limits = c(
-                   #   as.POSIXct("2025-09-24 00:00:00 HST"),
-                   #   as.POSIXct("2025-10-13 00:00:00 HST"))) +
+                   #   as.POSIXct("2025-11-29 00:00:00 HST"),
+                   #   as.POSIXct("2025-12-26 00:00:00 HST"))) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
