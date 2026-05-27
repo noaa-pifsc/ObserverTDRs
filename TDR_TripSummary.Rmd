@@ -38,8 +38,8 @@ TripNum <- c('LL')
 TripType <- c('DeepSet')
 
 # Enter TDR nomenclature here (deep/shallow or 1/2)
-TDRa <- c('DeepTDR')
-TDRb <- c('ShallowTDR')
+TDRa <- c('TDR1')
+TDRb <- c('TDR2')
 ```
 
 ```{r}
@@ -75,7 +75,7 @@ tdr$DateTime <- as.POSIXct(paste(tdr$Date, tdr$Time), format="%m/%d/%Y %H:%M:%S"
 # Observer TDRs: I've tested a few values for shallow sets (11, 5, 0.5) and they
 # all look the same so I went with least restrictive value
 tdr <- tdr %>% 
-  mutate(DepthOnly=replace(`Pressure [dBars]`, `Pressure [dBars]` <= 0.5, NA))
+  mutate(DepthOnly=replace(`Pressure [dBars]`, `Pressure [dBars]` <= 0.9, NA))
 ```
 
 ## Trip Number `r TripNum`, `r TripType`
@@ -111,8 +111,8 @@ ggplot(tdr, aes(DateTime, DepthOnly, color=`IntTemp [C]`)) +
                         limits = c(8, 30)) +
   scale_x_datetime(date_labels='%d-%b-%Y', date_breaks = '2 days', # ) + 
                    limits = c(
-                     as.POSIXct("2026-04-10 00:00:00 HST"),
-                     as.POSIXct("2026-04-23 00:00:00 HST"))) +
+                     as.POSIXct(floor_date(min(tdr$DateTime), unit='day')),
+                     as.POSIXct(ceiling_date(max(tdr$DateTime), unit='day')))) +
   scale_y_reverse() +
   xlab('Date') +
   ylab('Depth (m)') +
