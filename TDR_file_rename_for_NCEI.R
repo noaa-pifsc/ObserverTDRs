@@ -33,7 +33,7 @@ for (i in seq_along(tdr_files)) {
   # Read in the tdr file's metadata to get the birth time
   tdr <- fs::file_info(tdr_files[i])
   # format the birth time to YYYYMMDD
-  cDate <- format(tdr$birth_time, '%Y%m%d')
+  cDate <- format(tdr$birth_time, '%Y%m%d') 
   # Get the trip number from the tdr file name. We are using this to match with the observer metadata
   fileName <- str_extract(tdr$path, "(?<=/).*")
   # Isolate the observer metadata for the file
@@ -49,15 +49,21 @@ for (i in seq_along(tdr_files)) {
   eDate <- meta |> distinct(EndDate_HST) |> 
     mutate(newDate=format(mdy(EndDate_HST), "%Y%m%d")) |> pull(newDate)
   # Pull out wheter the TDR was on a shallow or deep hook, or if it was TDR1 or TDR2.
+  # To simplify for NCEI, I'm naming all shallow TDRs TDR1 and all deep TDRs TDR2. 
   # We have to grab this from the tdr filename becuase the observer metadata has two entries per Trip Number
   # Extract characters between the last "_" and ".csv"
   # Pattern breaks down as: 
   #   (?<=_)  -> Look behind for an underscore (don't include it in output)
   #   [^_]+   -> Match 1 or more characters that are NOT underscores
   #   (?=\\.csv) -> Look ahead for '.csv' (don't include it in output)
-  tdrID <- str_extract(tdr$path, "(?<=_)[^_]+(?=\\.csv)") 
+  tdrIDraw <- (str_extract(tdr$path, "(?<=_)[^_]+(?=\\.csv)"))
+  tdrID <- case_when(
+    tdrIDraw == 'ShallowTDR' ~ "TDR1",
+    tdrIDraw == 'DeepTDR' ~ "TDR2",
+    TRUE         ~ tdrIDraw  # Acts as the final 'else'
+  )
   # Make the ncei file name
-  nceiName <- paste0(paste('TDR', TripNum, tdrID, cDate, sDate, eDate, sep='_'), '.csv')
+  nceiName <- paste0('TDR_', TripNum, '_', tdrID,'_c', cDate, '_s', sDate, '_e', eDate, '.csv')
   
   # Read in the csv file
   myDat <- read_csv(tdr_files[i], skip = 2, show_col_types = FALSE)
