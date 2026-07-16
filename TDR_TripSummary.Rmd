@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
 library(tidyverse, quietly = TRUE)
 library(here)
 library(lubridate)
+library(googledrive)
 ```
 
 ```{r}
@@ -32,32 +33,46 @@ library(lubridate)
 # and populates some values we'll use again
 
 # Enter the trip number here
-TripNum <- c('LL')
+TripNum <- c('LL8784')
 
 # Enter trip type here (deep or shallow)
 TripType <- c('DeepSet')
 
 # Enter TDR nomenclature here (deep/shallow or 1/2)
-TDRa <- c('TDR1')
-TDRb <- c('TDR2')
+TDRa <- c('ShallowTDR')
+TDRb <- c('DeepTDR')
+
 ```
 
-```{r}
-# Load data, and add a column for gear position
-# This is written for a Mac and things are probably different on a PC
-tdr1 <- read_csv(paste("/Volumes/GUTSNGRAVY/ObserverTDRs/",
-                       TripNum, "_",
-                       TripType, "_",
-                       TDRa, ".csv", sep = ""),
-                 skip = 2, show_col_types = FALSE) |>
-  mutate(GearPos = "Deep")
+```{r include=FALSE}
+# Authorize google drive
+drive_auth()
+```
 
-tdr2 <- read_csv(paste("/Volumes/GUTSNGRAVY/ObserverTDRs/",
-                       TripNum, "_",
-                       TripType, "_",
-                       TDRb, ".csv", sep = ""),
-                 skip = 2, show_col_types = FALSE) |>
+```{r include=FALSE}
+# Make the file names
+# Shallow
+tdrAname <- paste0("ObserverTDRs/", TripNum, "_", TripType, "_", TDRa, ".csv")
+# Deep
+tdrBname <- paste0("ObserverTDRs/", TripNum, "_", TripType, "_", TDRb, ".csv")
+
+# Find the files in google drive
+# Shallow
+tdrAfile <- drive_get(
+  path = tdrAname, 
+  shared_drive = "NMFS PIC ESD PRP GutsNGravy"
+)
+# Deep
+tdrBfile <- drive_get(
+  path = tdrBname, 
+  shared_drive = "NMFS PIC ESD PRP GutsNGravy"
+)
+
+# Read in (stream) the file directly into memory 
+tdr1 <- read_csv(drive_read_string(tdrAfile), skip = 2, show_col_types = FALSE) |>
   mutate(GearPos = "Shallow")
+tdr2 <- read_csv(drive_read_string(tdrBfile), skip = 2, show_col_types = FALSE) |>
+  mutate(GearPos = "Deep")
 
 # Combine data, noting deep and shallow or 1 and 2
 tdr <- bind_rows(list(tdr1, tdr2))
