@@ -11,13 +11,23 @@ collected TDR data.
 ```{r}
 # Set up environment
 library(tidyverse)
+library(googledrive)
+library(here)
 ```
 
 This is written for a Mac and things may be different on a PC.  
+
+Because the data is now housed on the shared google drive, I have updated the code below. 
 ```{r}
 # Load data
-tdr1 <- read_csv("/Volumes/GUTSNGRAVY/ObserverTDRs/LL8774_DeepSet_TDR1.csv", skip = 2, show_col_types = FALSE)
-tdr2 <- read_csv("/Volumes/GUTSNGRAVY/ObserverTDRs/LL8774_DeepSet_TDR2.csv", skip = 2, show_col_types = FALSE)
+## Authorize google drive
+drive_auth()
+## Paste the link to the tdr data file you want here. This doesn't download the file, just loads the data into R
+tdr1 <- drive_read_string(as_id("https://drive.google.com/file/d/1QTYrAXfKr4JFSGitZBZ-WzZHEmj-Dx6v/view?usp=sharing")) %>% 
+    read_csv(skip=2)
+tdr2 <- drive_read_string(as_id("https://drive.google.com/file/d/1jub4NZMupAwXmZTx9T9ROwYs_iEjFUKM/view?usp=sharing")) %>% 
+    read_csv(skip=2)
+
 ```
 
 The TDRs keep collecting data until they dry, which can take a while in the 
@@ -29,7 +39,7 @@ tdr1 <- tdr1 |>
 
 tdr2 <- tdr2 |>
   filter(`Valid Flag` == 1)  |>
-  filter(`Pressure [dBars]` > 0)
+  filter(`Pressure [dBars]` > 0.5)
 ```
 
 I just run head() and tail() in the console and then copy/paste the first/last
