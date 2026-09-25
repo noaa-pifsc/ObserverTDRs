@@ -26,7 +26,10 @@ folder_path <- "TDR_Data/"
 # Get full paths of all CSV files in that folder
 tdr_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 # Read in metadata
-tdr_meta <- read_xlsx('TDR_Data/PIROP_TDR_metadata.xlsx')
+tdr_meta <- read_xlsx('PIROP_TDR_metadata.xlsx')
+
+# making a file with the old and new names
+nameKey <- data.frame(Old_Name = NA, New_Name=NA)
 
 # I'm doing this in a loop because it's easier for me to think that way
 for (i in seq_along(tdr_files)) {
@@ -48,9 +51,9 @@ for (i in seq_along(tdr_files)) {
   # Get the data end date from the observer metadata
   eDate <- meta |> distinct(EndDate_HST) |> 
     mutate(newDate=format(mdy(EndDate_HST), "%Y%m%d")) |> pull(newDate)
-  # Pull out wheter the TDR was on a shallow or deep hook, or if it was TDR1 or TDR2.
+  # Pull out whether the TDR was on a shallow or deep hook, or if it was TDR1 or TDR2.
   # To simplify for NCEI, I'm naming all shallow TDRs TDR1 and all deep TDRs TDR2. 
-  # We have to grab this from the tdr filename becuase the observer metadata has two entries per Trip Number
+  # We have to grab this from the tdr filename because the observer metadata has two entries per Trip Number
   # Extract characters between the last "_" and ".csv"
   # Pattern breaks down as: 
   #   (?<=_)  -> Look behind for an underscore (don't include it in output)
@@ -65,9 +68,12 @@ for (i in seq_along(tdr_files)) {
   # Make the ncei file name
   nceiName <- paste0('TDR_', TripNum, '_', tdrID,'_c', cDate, '_s', sDate, '_e', eDate, '.csv')
   
+  nameKey <- nameKey |> 
+    add_row(Old_Name=fileName, New_Name=nceiName)
+  
   # Read in the csv file
-  myDat <- read_csv(tdr_files[i], skip = 2, show_col_types = FALSE)
-  write_csv(myDat, paste0('TDR_for_NCEI/', nceiName))
+  #myDat <- read_csv(tdr_files[i], skip = 2, show_col_types = FALSE)
+  #write_csv(myDat, paste0('TDR_for_NCEI/', nceiName))
 }
 
 
