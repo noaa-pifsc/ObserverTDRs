@@ -5,29 +5,65 @@ date: "2024-12-17"
 output: html_document
 ---
 
-The purpose of this script is to collect the start and end date for the observer-
-collected TDR data.
+The purpose of this script is to update the metadata record for the Observer deployed TDRs. The script appends the newest TDR information to the google sheet, then overwrites the old .csv metadata file for submission to NCEI. 
 
 ```{r}
 # Set up environment
-library(tidyverse)
+library(tidyverse, quietly = TRUE)
 library(googledrive)
+library(googlesheets4)
 library(here)
 ```
 
 This is written for a Mac and things may be different on a PC.  
 
-Because the data is now housed on the shared google drive, I have updated the code below. 
-```{r}
-# Load data
-## Authorize google drive
-drive_auth()
-## Paste the link to the tdr data file you want here. This doesn't download the file, just loads the data into R
-tdr1 <- drive_read_string(as_id("https://drive.google.com/file/d/1QTYrAXfKr4JFSGitZBZ-WzZHEmj-Dx6v/view?usp=sharing")) %>% 
-    read_csv(skip=2)
-tdr2 <- drive_read_string(as_id("https://drive.google.com/file/d/1jub4NZMupAwXmZTx9T9ROwYs_iEjFUKM/view?usp=sharing")) %>% 
-    read_csv(skip=2)
+The data is housed 'locally' on a Shared Google Drive, so the script works completely within the GutsNGravy shared drive.  
 
+```{r}
+# This section builds out some fields to construct the file name
+# and populates some values we'll use again
+
+# Enter the trip number here
+TripNum <- c('LL8804')
+
+# Enter trip type here (deep or shallow)
+TripType <- c('DeepSet')
+
+# Enter TDR nomenclature here (deep/shallow or 1/2)
+TDRa <- c('TDR1')
+TDRb <- c('TDR2')
+
+```
+
+```{r include=FALSE}
+# Authorize google drive
+drive_auth()
+```
+
+```{r include=FALSE}
+# Make the file names
+# Shallow
+tdrAname <- paste0("ObserverTDRs/", TripNum, "_", TripType, "_", TDRa, ".csv")
+# Deep
+tdrBname <- paste0("ObserverTDRs/", TripNum, "_", TripType, "_", TDRb, ".csv")
+
+# Find the files in google drive
+# Shallow
+tdrAfile <- drive_get(
+  path = tdrAname, 
+  shared_drive = "NMFS PIC ESD PRP GutsNGravy"
+)
+# Deep
+tdrBfile <- drive_get(
+  path = tdrBname, 
+  shared_drive = "NMFS PIC ESD PRP GutsNGravy"
+)
+
+# Read in (stream) the file directly into memory 
+tdr1 <- read_csv(drive_read_string(tdrAfile), skip = 2, show_col_types = FALSE) |>
+  mutate(GearPos = "Shallow")
+tdr2 <- read_csv(drive_read_string(tdrBfile), skip = 2, show_col_types = FALSE) |>
+  mutate(GearPos = "Deep")
 ```
 
 The TDRs keep collecting data until they dry, which can take a while in the 
@@ -35,16 +71,87 @@ pelican case.  So, filtering to get only records with a valid flag of 1.
 If negative pressures are present, I filter those out, too.
 ```{r}
 tdr1 <- tdr1 |>
-  filter(`Valid Flag` == 1)
+  filter(`Valid Flag` == 1)  |>
+  filter(`Pressure [dBars]` > 0.75)
 
 tdr2 <- tdr2 |>
   filter(`Valid Flag` == 1)  |>
-  filter(`Pressure [dBars]` > 0.5)
+  filter(`Pressure [dBars]` > 0.75)
 ```
 
-I just run head() and tail() in the console and then copy/paste the first/last
-value into the metadata sheet.
+We can append the metadata directly to a google sheet, so we are creating dataframes below with all the needed information and then pushing it to the metadata file. 
+```{r}
+# Prepare a dataframe with the new TDRs metadata.
+# I'm doing one data frame for each TDR instead of combining them. 
+new_row_TDR1 <- data.frame(
+  FileName = tdrAfile$name,
+  TripID = TripNum,
+  TripType = TripType,
+  HookDepth = ifelse(mean(tdr1$`Pressure [dBars]`) < mean(tdr2$`Pressure [dBars]`), 'Shallow', 'Deep'),
+  StartDate_HST = min(tdr1$Date, na.rm = T),
+  EndDate_HST = max(tdr1$Date, na.rm=T),
+  ObserverComments = "Crew had difficulty understanding placement of the clips. Some of the TDRs were deployed 1-2 (beeps) hooks away from directed location."
+)
 
-When copy and pasting the dates into the Excel metadata sheet, I precede the text
-with an apostrophe so that Excel doesn't try to do its own thing with the dates.
+# Prepare a dataframe with the new TDRs metadata
+new_row_TDR2 <- data.frame(
+  FileName = tdrAfile$name,
+  TripID = TripNum,
+  TripType = TripType,
+  HookDepth = ifelse(mean(tdr2$`Pressure [dBars]`) > mean(tdr1$`Pressure [dBars]`), 'Deep', 'Shallow'),
+  StartDate_HST = min(tdr2$Date, na.rm = T),
+  EndDate_HST = max(tdr2$Date, na.rm=T),
+  ObserverComments = "Crew had difficulty understanding placement of the clips. Some of the TDRs were deployed 1-2 (beeps) hooks away from directed location."
+)
+
+new_rows <- rbind(new_row_TDR1, new_row_TDR2)
+
+```
+
+Append the newest data to the metadata file
+```{r}
+# authenticate
+gs4_auth()
+
+# metadata sheet url
+meta_url <- "https://docs.google.com/spreadsheets/d/1qDbJCz7SZlEK47RZR6Bs24tsvUHD5tE2ttvKQhC4iu4/edit?usp=sharing"
+
+sheet_append(
+  ss = meta_url,
+  data = new_rows,
+  sheet = 1 # Sheet tab name or index (defaults to the first sheet)
+)
+```
+
+Save the metadata file as a .csv for NCEI to GutsNGravy shared drive
+This file needs to be submitted with the TDR files each time. 
+```{r}
+# Fetch the updated metadata sheet
+updated_data <- read_sheet(ss = meta_url, sheet = 1)
+
+# Save locally to a temporary CSV file
+temp_csv <- tempfile(fileext = ".csv")
+write.csv(updated_metadata_sheet, file = temp_csv, row.names = FALSE)
+
+# Save/Upload the CSV directly to Google Drive
+# First, locate the Shared Drive named "GutsNGravy" to get the ID
+guts_drive <- shared_drive_find(pattern = "NMFS PIC ESD PRP GutsNGravy")
+observer_folder <- drive_find(
+    pattern = "^ObserverTDRs$",
+    type = "folder",
+    shared_drive = guts_drive
+)
+
+# Use drive_put() to create the file or overwrite/update it if it already exists
+drive_put(
+  media = temp_csv,
+  path = observer_folder,
+  name = "PIROP_TDR_metadata.csv",
+)
+
+# Clean up local temporary file
+file.remove(temp_csv)
+
+```
+
 
