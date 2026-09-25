@@ -95,7 +95,7 @@ new_row_TDR1 <- data.frame(
 
 # Prepare a dataframe with the new TDRs metadata
 new_row_TDR2 <- data.frame(
-  FileName = tdrAfile$name,
+  FileName = tdrBfile$name,
   TripID = TripNum,
   TripType = TripType,
   HookDepth = ifelse(mean(tdr2$`Pressure [dBars]`) > mean(tdr1$`Pressure [dBars]`), 'Deep', 'Shallow'),
