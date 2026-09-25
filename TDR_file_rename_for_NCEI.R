@@ -71,46 +71,50 @@ for (i in seq_along(tdr_files)) {
   nameKey <- nameKey |> 
     add_row(Old_Name=fileName, New_Name=nceiName)
   
+  
   # Read in the csv file
-  #myDat <- read_csv(tdr_files[i], skip = 2, show_col_types = FALSE)
-  #write_csv(myDat, paste0('TDR_for_NCEI/', nceiName))
+  myDat <- read_csv(tdr_files[i], skip = 2, show_col_types = FALSE)
+  write_csv(myDat, paste0('TDR_for_NCEI/', nceiName))
 }
 
+nameKey <- nameKey |> 
+  slice(-1)
+write.csv(nameKey, 'TDR_file_name_change_key.csv', quote = F, row.names = F)
 
 
-# This is code to pull the dates directly from google drive, but see the issue with that in the notes at the top of this document
+# # This is code to pull the dates directly from google drive, but see the issue with that in the notes at the top of this document
+# # 
+# library(googledrive)
+# library(dplyr)
+# library(purrr)
 # 
-library(googledrive)
-library(dplyr)
-library(purrr)
-
-# 1. Authenticate with Google (only needs to run once)
-drive_auth()
-
-# 2. Locate the specific "ObserverTDRs" folder within your Shared Drive
-# This step retrieves a "dribble" (a Google Drive tibble object) representing the folder
-tdr_folder <- drive_get(
-  path = "ObserverTDRs", 
-  shared_drive = "NMFS PIC ESD PRP GutsNGravy"
-)
-
-# 3. List the CSV files inside that specific folder object
-tdr_gdrive_files <- drive_ls(
-  path = tdr_folder, 
-  pattern = "\\.csv$"
-)
-
-# 4. Extract the file names and creation dates
-# 3. Pull both timestamps from the API metadata
-tdr <- tdr_gdrive_files %>%
-  mutate(
-    # The date it was uploaded to Google Drive
-    upload_time = map_chr(drive_resource, "createdTime") %>% ymd_hms(),
-    
-    # The date the original file was last edited/saved locally before upload
-    original_modified_time = map_chr(drive_resource, "modifiedTime") %>% ymd_hms()
-  ) %>%
-  select(name, upload_time, original_modified_time)
-
-# View your timestamps side-by-side
-print(tdr)
+# # 1. Authenticate with Google (only needs to run once)
+# drive_auth()
+# 
+# # 2. Locate the specific "ObserverTDRs" folder within your Shared Drive
+# # This step retrieves a "dribble" (a Google Drive tibble object) representing the folder
+# tdr_folder <- drive_get(
+#   path = "ObserverTDRs", 
+#   shared_drive = "NMFS PIC ESD PRP GutsNGravy"
+# )
+# 
+# # 3. List the CSV files inside that specific folder object
+# tdr_gdrive_files <- drive_ls(
+#   path = tdr_folder, 
+#   pattern = "\\.csv$"
+# )
+# 
+# # 4. Extract the file names and creation dates
+# # 3. Pull both timestamps from the API metadata
+# tdr <- tdr_gdrive_files %>%
+#   mutate(
+#     # The date it was uploaded to Google Drive
+#     upload_time = map_chr(drive_resource, "createdTime") %>% ymd_hms(),
+#     
+#     # The date the original file was last edited/saved locally before upload
+#     original_modified_time = map_chr(drive_resource, "modifiedTime") %>% ymd_hms()
+#   ) %>%
+#   select(name, upload_time, original_modified_time)
+# 
+# # View your timestamps side-by-side
+# print(tdr)
