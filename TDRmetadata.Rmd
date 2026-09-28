@@ -176,5 +176,3 @@ drive_put(
 file.remove(temp_csv)
 
 ```
-
-
